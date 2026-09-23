@@ -1,0 +1,29 @@
+.spam-alert-banner {
+  padding: 12px 16px;
+  margin: 10px 0;
+  border-radius: 6px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.spam-alert-danger {
+  background-color: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #991b1b;
+}
+
+.spam-alert-safe {
+  background-color: #dcfce7;
+  border: 1px solid #22c55e;
+  color: #166534;
+}
+/* Add a yellow banner for standard Spam */
+.spam-alert-warning {
+  background-color: #fef08a;
+  border: 1px solid #eab308;
+  color: #854d0e;
+}

@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Real-Time Email Spam Detector",
+  "version": "1.0",
+  "description": "Scans opened emails in real-time and flags potential spam.",
+  "permissions": ["activeTab"],
+  "host_permissions": [
+    "http://127.0.0.1:8000/*",
+    "*://mail.google.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://mail.google.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
