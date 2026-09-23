@@ -12,7 +12,7 @@ function scanCurrentEmail() {
   const existingBanner = document.querySelector(".spam-alert-banner");
   if (existingBanner) existingBanner.remove();
 
-  fetch("http://127.0.0.1:8000/predict", {
+  fetch("https://email-classifier-extension-1.onrender.com/predict", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ content: emailText })
