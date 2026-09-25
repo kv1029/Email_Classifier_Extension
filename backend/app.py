@@ -9,9 +9,18 @@ import torch.nn as nn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import os
 
-nltk.download("punkt", quiet=True)
-nltk.download("stopwords", quiet=True)
+# Use a private, writable directory (avoids the "world-writable" refusal)
+NLTK_DIR = os.path.join(os.path.dirname(__file__), "nltk_data")
+os.makedirs(NLTK_DIR, exist_ok=True)
+nltk.data.path.append(NLTK_DIR)
+
+for pkg in ["punkt", "punkt_tab", "stopwords"]:
+    try:
+        nltk.data.find(f"tokenizers/{pkg}" if "punkt" in pkg else f"corpora/{pkg}")
+    except LookupError:
+        nltk.download(pkg, download_dir=NLTK_DIR, quiet=True)
 
 # 1. Define Model Architecture (Updated for 3 classes)
 class RNN(nn.Module):

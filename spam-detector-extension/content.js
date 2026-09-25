@@ -12,26 +12,22 @@ function scanCurrentEmail() {
   const existingBanner = document.querySelector(".spam-alert-banner");
   if (existingBanner) existingBanner.remove();
 
-  fetch("https://email-classifier-extension-1.onrender.com/predict", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content: emailText })
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      // FIX: data.is_spam ki jagah data.category kar diya gaya hai
-      displayAlert(emailBodyElement, data.category, data.probability);
-    })
-    .catch((err) => {
-      console.error("Spam detector backend error:", err);
-    });
+  chrome.runtime.sendMessage(
+    { action: "checkSpam", text: emailText },
+    (response) => {
+      if (response && response.success) {
+        displayAlert(emailBodyElement, response.data.category, response.data.probability);
+      } else {
+        console.error("Spam detector backend error:", response ? response.error : "Unknown error");
+      }
+    }
+  );
 }
 
-// FIX: Purana wala displayAlert delete kar diya gaya hai. Sirf naya wala rakha hai.
 function displayAlert(container, category, probability) {
   const banner = document.createElement("div");
   const pct = Math.round(probability * 100);
-  
+
   if (category === "Ham") {
       banner.className = "spam-alert-banner spam-alert-safe";
       banner.innerText = `✅ Safe: Verified non-spam message (${pct}% confidence)`;
@@ -39,7 +35,7 @@ function displayAlert(container, category, probability) {
       banner.className = "spam-alert-banner spam-alert-danger";
       banner.innerText = `🚨 PHISHING WARNING: Do not click links! (${pct}% confidence)`;
   } else {
-      banner.className = "spam-alert-banner spam-alert-warning"; 
+      banner.className = "spam-alert-banner spam-alert-warning";
       banner.innerText = `⚠️ Spam: Promotional or junk mail (${pct}% confidence)`;
   }
 

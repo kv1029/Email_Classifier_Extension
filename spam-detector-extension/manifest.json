@@ -5,9 +5,12 @@
   "description": "Scans opened emails in real-time and flags potential spam.",
   "permissions": ["activeTab"],
   "host_permissions": [
-    "http://127.0.0.1:8000/*",
+    "https://email-classifier-extension-1.onrender.com/*",
     "*://mail.google.com/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["*://mail.google.com/*"],
