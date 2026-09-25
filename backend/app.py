@@ -9,27 +9,14 @@ import torch.nn as nn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import os
 
-# Use a private, writable directory (avoids the "world-writable" refusal)
-NLTK_DIR = os.path.join(os.path.dirname(__file__), "nltk_data")
-os.makedirs(NLTK_DIR, exist_ok=True)
-nltk.data.path.append(NLTK_DIR)
-
-for pkg in ["punkt", "punkt_tab", "stopwords"]:
-    try:
-        nltk.data.find(f"tokenizers/{pkg}" if "punkt" in pkg else f"corpora/{pkg}")
-    except LookupError:
-        nltk.download(pkg, download_dir=NLTK_DIR, quiet=True)
-
-# 1. Define Model Architecture (Updated for 3 classes)
+# 1. Define Model Architecture
 class RNN(nn.Module):
     def __init__(self, input_size, hidden_size=128, num_layers=1):
         super().__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.rnn = nn.RNN(input_size, hidden_size, num_layers, batch_first=True)
-        # CHANGED: 3 neurons for Ham, Phish, and Spam
         self.fc = nn.Linear(hidden_size, 3)
 
     def forward(self, x):
@@ -61,7 +48,6 @@ def clean_text(text: str) -> str:
 # 4. FastAPI Setup
 app = FastAPI()
 
-# Allow requests from the Chrome Extension
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -77,7 +63,6 @@ class EmailPayload(BaseModel):
 def predict_spam(payload: EmailPayload):
     cleaned = clean_text(payload.content)
     if not cleaned.strip():
-        # CHANGED: Return 'category' instead of 'is_spam'
         return {"category": "Ham", "probability": 0.0}
 
     vec = tf.transform([cleaned]).toarray()
@@ -85,17 +70,10 @@ def predict_spam(payload: EmailPayload):
 
     with torch.no_grad():
         output = model(tensor)
-        
-        # CHANGED: Apply Softmax to get probabilities for all 3 classes
         probabilities = torch.softmax(output, dim=1).squeeze()
-        
-        # Get the index (0, 1, or 2) with the highest score
         predicted_idx = int(torch.argmax(probabilities))
-        
-        # Extract the confidence score for the winning class
         confidence = float(probabilities[predicted_idx])
 
-    # Map the numerical prediction back to text
     labels = {0: "Ham", 1: "Phish", 2: "Spam"}
 
     return {
