@@ -1,3 +1,4 @@
+# app.py
 import re
 import joblib
 import nltk
@@ -32,8 +33,19 @@ model = RNN(input_size=input_size)
 model.load_state_dict(torch.load("spam_rnn_model.pth", map_location=torch.device("cpu")))
 model.eval()
 
+# Ensure NLTK data is available (primarily for local, Render uses startup.py)
+try:
+    stop_words = set(stopwords.words("english"))
+except LookupError:
+    nltk.download('stopwords')
+    stop_words = set(stopwords.words("english"))
+
+try:
+    word_tokenize("test")
+except LookupError:
+    nltk.download('punkt')
+
 ps = PorterStemmer()
-stop_words = set(stopwords.words("english"))
 
 # 3. Preprocessing Functions
 def clean_text(text: str) -> str:
@@ -66,7 +78,10 @@ def predict_spam(payload: EmailPayload):
         return {"category": "Ham", "probability": 0.0}
 
     vec = tf.transform([cleaned]).toarray()
-    tensor = torch.from_numpy(vec).float().unsqueeze(1)
+    
+    # --- THIS IS THE UPDATED LINE ---
+    # Correctly add a batch dimension for the model
+    tensor = torch.from_numpy(vec).float().unsqueeze(0)
 
     with torch.no_grad():
         output = model(tensor)
@@ -80,3 +95,4 @@ def predict_spam(payload: EmailPayload):
         "category": labels[predicted_idx],
         "probability": round(confidence, 4)
     }
+

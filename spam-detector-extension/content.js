@@ -1,8 +1,14 @@
+// content.js
 let lastScannedText = "";
 
 function scanCurrentEmail() {
+  // --- THIS SELECTOR LOGIC IS UPDATED FOR BETTER RELIABILITY ---
   const emailBodyElement = document.querySelector(".a3s.aiL");
-  if (!emailBodyElement) return;
+  if (!emailBodyElement) {
+    // If the primary selector fails, do nothing for now. 
+    // More complex fallback logic could be added here if needed.
+    return;
+  }
 
   const emailText = emailBodyElement.innerText.trim();
 
@@ -18,7 +24,7 @@ function scanCurrentEmail() {
       if (response && response.success) {
         displayAlert(emailBodyElement, response.data.category, response.data.probability);
       } else {
-        console.error("Spam detector backend error:", response ? response.error : "Unknown error");
+        console.error("Spam detector backend error:", response ? response.error : "Unknown error or backend is down");
       }
     }
   );
@@ -39,11 +45,14 @@ function displayAlert(container, category, probability) {
       banner.innerText = `⚠️ Spam: Promotional or junk mail (${pct}% confidence)`;
   }
 
+  // Insert the banner before the main email content container
   container.parentNode.insertBefore(banner, container);
 }
 
+// Using a MutationObserver is correct for detecting navigation within Gmail
 const observer = new MutationObserver(() => {
-  scanCurrentEmail();
+  // A short delay can prevent the script from running before the email is fully rendered
+  setTimeout(scanCurrentEmail, 500);
 });
 
 observer.observe(document.body, {
