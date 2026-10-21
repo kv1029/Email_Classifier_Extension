@@ -10,8 +10,9 @@ except AttributeError:
 else:
     ssl._create_default_https_context = _create_unverified_https_context
 
-print("Downloading NLTK 'punkt' and 'stopwords' packages...")
+print("Downloading NLTK 'punkt', 'punkt_tab', and 'stopwords' packages...")
 nltk.download('punkt')
+nltk.download('punkt_tab')
 nltk.download('stopwords')
 print("NLTK packages downloaded successfully.")
 
